@@ -34,10 +34,21 @@
 #include "filters.h"
 #include <stdlib.h>
 
+#if !defined(__AMIGA__)
+
 #define LB_MASK       0x00FEFEFE
 #define RED_BLUE_MASK 0x00FF00FF
 #define GREEN_MASK    0x0000FF00
 #define PART_MASK     0x00FF00FF
+
+#else
+
+//#define RED_MASK565	0xF800
+#define RED_BLUE_MASK565 0xF81F
+#define GREEN_MASK565    0x07E0
+#define PG_LBMASK565	0xF7DE
+
+#endif
 
 static uint32_t pixel_diff(uint32_t x, uint32_t y, const uint32_t *r2y)
 {
@@ -54,8 +65,11 @@ static uint32_t pixel_diff(uint32_t x, uint32_t y, const uint32_t *r2y)
            abs((yuv1 & VMASK) - (yuv2 & VMASK));
 }
 
+#if !defined(__AMIGA__)
+
 #define ALPHA_BLEND_BASE(a, b, m, s) (  (PART_MASK & (((a) & PART_MASK) + (((((b) & PART_MASK) - ((a) & PART_MASK)) * (m)) >> (s)))) \
                                       | ((PART_MASK & ((((a) >> 8) & PART_MASK) + ((((((b) >> 8) & PART_MASK) - (((a) >> 8) & PART_MASK)) * (m)) >> (s)))) << 8))
+
 
 #define ALPHA_BLEND_32_W(a, b)  ALPHA_BLEND_BASE(a, b, 1, 3)
 #define ALPHA_BLEND_64_W(a, b)  ALPHA_BLEND_BASE(a, b, 1, 2)
@@ -63,7 +77,27 @@ static uint32_t pixel_diff(uint32_t x, uint32_t y, const uint32_t *r2y)
 #define ALPHA_BLEND_192_W(a, b) ALPHA_BLEND_BASE(a, b, 3, 2)
 #define ALPHA_BLEND_224_W(a, b) ALPHA_BLEND_BASE(a, b, 7, 3)
 
+#else
 
+static const unsigned short int pg_red_blue_mask = RED_BLUE_MASK565;
+static const unsigned short int pg_green_mask = GREEN_MASK565;
+static const unsigned short int pg_lbmask = PG_LBMASK565;
+
+#define ALPHA_BLEND_128_W(dst, src) ((src & pg_lbmask) >> 1) + ((dst & pg_lbmask) >> 1)
+
+#define ALPHA_BLEND_32_W(dst, src) ( (pg_red_blue_mask & ((dst & pg_red_blue_mask) + ((((src & pg_red_blue_mask) - (dst & pg_red_blue_mask))) >>3))) \
+    | (pg_green_mask & ((dst & pg_green_mask) + ((((src & pg_green_mask) - (dst & pg_green_mask))) >>3))))
+
+#define ALPHA_BLEND_64_W(dst, src) ( (pg_red_blue_mask & ((dst & pg_red_blue_mask) + ((((src & pg_red_blue_mask) - (dst & pg_red_blue_mask))) >>2))) \
+    | (pg_green_mask & ((dst & pg_green_mask) + ((((src & pg_green_mask) - (dst & pg_green_mask))) >>2))))
+
+#define ALPHA_BLEND_192_W(dst, src) ( (pg_red_blue_mask & ((dst & pg_red_blue_mask) + ((((src & pg_red_blue_mask) - (dst & pg_red_blue_mask)) * 3) >>2))) \
+    | (pg_green_mask & ((dst & pg_green_mask) + ((((src & pg_green_mask) - (dst & pg_green_mask)) * 3) >>2))))
+
+#define ALPHA_BLEND_224_W(dst, src) ( (pg_red_blue_mask & ((dst & pg_red_blue_mask) + ((((src & pg_red_blue_mask) - (dst & pg_red_blue_mask)) * 7) >>3))) \
+    | (pg_green_mask & ((dst & pg_green_mask) + ((((src & pg_green_mask) - (dst & pg_green_mask)) * 7) >>3))))
+
+#endif
 
 #define df(A, B) pixel_diff(A, B, r2y)
 #define eq(A, B) (df(A, B) < 155)
