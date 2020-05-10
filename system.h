@@ -30,13 +30,10 @@ struct PlayerInput {
 	bool keyReleased(int keyMask) const {
 		return (prevMask & keyMask) == keyMask && (mask & keyMask) == 0;
 	}
-	void flush() {
-		prevMask = mask = 0;
-	}
 };
 
 struct AudioCallback {
-	void (*proc)(void *param, int16_t *stream, int len);
+	void (*proc)(void *param, int16_t *stream, int len); // 22khz
 	void *userdata;
 };
 
@@ -45,7 +42,12 @@ struct System {
 
 	virtual ~System() {}
 
+#if defined(__AMIGA__)
+	virtual void init(const char *title, int w, int h, bool fullscreen, bool widescreen, bool yuv, int width) = 0; // Cowcat width
+#else
 	virtual void init(const char *title, int w, int h, bool fullscreen, bool widescreen, bool yuv) = 0;
+#endif
+
 	virtual void destroy() = 0;
 
 	virtual void setScaler(const char *name, int multiplier) = 0;
@@ -65,7 +67,6 @@ struct System {
 
 	virtual void startAudio(AudioCallback callback) = 0;
 	virtual void stopAudio() = 0;
-	virtual uint32_t getOutputSampleRate() = 0;
 	virtual void lockAudio() = 0;
 	virtual void unlockAudio() = 0;
 	virtual AudioCallback setAudioCallback(AudioCallback callback) = 0;

@@ -60,7 +60,7 @@ struct SetupConfig {
 		uint8_t difficulty;
 		uint8_t stereo;
 		uint8_t volume;
-		uint8_t currentLevel;
+		uint8_t lastLevelNum;
 	} players[4]; // sizeof == 52
 	uint8_t unkD0;
 	uint8_t currentPlayer; // 0xD1
@@ -230,7 +230,6 @@ struct Sprite {
 	const uint8_t *bitmapBits;
 	Sprite *nextPtr;
 	uint16_t num;
-	uint16_t flags;
 	uint16_t w, h;
 };
 
@@ -349,7 +348,6 @@ struct MstCollision {
 	MonsterObject1 *monster1[32]; // 0x00
 	uint32_t count; // 0x80
 }; // sizeof == 132
-
 
 struct Task;
 

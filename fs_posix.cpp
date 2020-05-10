@@ -8,6 +8,7 @@
 #include "util.h"
 
 static const char *_suffixes[] = {
+	"hod.dem",
 	"setup.dat",
 	"setup.dax",
 	".paf",
@@ -30,10 +31,6 @@ static bool matchGameData(const char *path) {
 
 FileSystem::FileSystem(const char *dataPath, const char *savePath)
 	: _dataPath(dataPath), _savePath(savePath), _filesCount(0), _filesList(0) {
-
-	dataPath = "DATA"; // fix damn path one day..... cowcat
-	//printf("filesystem path %s\n", dataPath); // cowcat
-	//printf("filesystem savepath %s\n", savePath); // cowcat
 	listFiles(dataPath);
 }
 
@@ -46,7 +43,6 @@ FileSystem::~FileSystem() {
 
 FILE *FileSystem::openAssetFile(const char *name) {
 	FILE *fp = 0;
-	
 	for (int i = 0; i < _filesCount; ++i) {
 		const char *p = strrchr(_filesList[i], '/');
 		assert(p);
@@ -72,7 +68,6 @@ int FileSystem::closeFile(FILE *fp) {
 
 void FileSystem::addFilePath(const char *path) {
 	_filesList = (char **)realloc(_filesList, (_filesCount + 1) * sizeof(char *));
-
 	if (_filesList) {
 		_filesList[_filesCount] = strdup(path);
 		++_filesCount;
@@ -81,7 +76,6 @@ void FileSystem::addFilePath(const char *path) {
 
 void FileSystem::listFiles(const char *dir) {
 	DIR *d = opendir(dir);
-	
 	if (d) {
 		dirent *de;
 		while ((de = readdir(d)) != NULL) {
