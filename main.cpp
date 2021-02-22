@@ -36,6 +36,11 @@ static const char *_usage =
 static bool _fullscreen = false;
 static bool _widescreen = false;
 
+#if defined(__AMIGA__)
+#include <sys/unistd.h>
+static int width = 0; // Cowcat
+#endif
+
 static const bool _runBenchmark = false;
 static bool _runMenu = true;
 static bool _displayLoadingScreen = true;
@@ -60,9 +65,13 @@ static void setupAudio(Game *g) {
 	g_system->startAudio(cb);
 }
 
+#if defined(__AMIGA__)
+static const char *_defaultDataPath = "";
+static const char *_defaultSavePath = "";
+#else
 static const char *_defaultDataPath = ".";
-
 static const char *_defaultSavePath = ".";
+#endif
 
 static const char *_levelNames[] = {
 	"rock",
@@ -117,13 +126,28 @@ static int handleConfigIni(void *userdata, const char *section, const char *name
 		} else if (strcmp(name, "widescreen") == 0) {
 			_widescreen = configBool(value);
 		}
+
+		#if defined(__AMIGA__)
+		else if (strcmp(name, "width") == 0) {
+			width = atoi(value); // Cowcat
+		}
+		#endif
 	}
 	return 0;
 }
 
 int main(int argc, char *argv[]) {
+
+#if __AMIGA__
+	char amigapath[256];
+	_defaultDataPath = getcwd(amigapath, sizeof(amigapath));
+	_defaultSavePath = _defaultDataPath;
 	char *dataPath = 0;
 	char *savePath = 0;
+#else
+	char *dataPath = 0;
+	char *savePath = 0;
+#endif
 	int level = 0;
 	int checkpoint = 0;
 	bool resume = true; // resume game from 'setup.cfg'
@@ -214,7 +238,13 @@ int main(int argc, char *argv[]) {
 	// load setup.dat (PC) or setup.dax (PSX)
 	g->_res->loadSetupDat();
 	const bool isPsx = g->_res->_isPsx;
+
+	#if defined(__AMIGA__)
+	g_system->init(_title, Video::W, Video::H, _fullscreen, _widescreen, isPsx, width); // Cowcat width
+	#else
 	g_system->init(_title, Video::W, Video::H, _fullscreen, _widescreen, isPsx);
+	#endif
+
 	setupAudio(g);
 	if (isPsx) {
 		g->_video->initPsx();

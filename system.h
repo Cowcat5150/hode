@@ -40,7 +40,11 @@ struct System {
 
 	virtual ~System() {}
 
+#if defined(__AMIGA__)
+	virtual void init(const char *title, int w, int h, bool fullscreen, bool widescreen, bool yuv, int width) = 0; // Cowcat width
+#else
 	virtual void init(const char *title, int w, int h, bool fullscreen, bool widescreen, bool yuv) = 0;
+#endif
 	virtual void destroy() = 0;
 
 	virtual void setScaler(const char *name, int multiplier) = 0;
