@@ -12,38 +12,22 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#if defined(_WIN32) || defined(PSP) || defined(__SWITCH__) || defined(__vita__)
+#if defined(_WIN32) || defined(PSP)
 #define le16toh(x) x
 #define le32toh(x) x
 #define htole16(x) x
 #define htole32(x) x
 static const bool kByteSwapData = false; // no byteswap needed on little endian
-#elif defined(__APPLE__)
-#include <libkern/OSByteOrder.h>
-#define le16toh(x) OSSwapLittleToHostInt16(x)
-#define le32toh(x) OSSwapLittleToHostInt32(x)
-#define htole16(x) OSSwapHostToLittleInt16(x)
-#define htole32(x) OSSwapHostToLittleInt32(x)
-#include <machine/endian.h>
-static const bool kByteSwapData = (BYTE_ORDER == BIG_ENDIAN);
-#else
-#if defined(WII) // big endian
+#elif defined(WII) // big endian
 #include <sys/types.h>
 #define le16toh(x) __bswap16(x)
 #define le32toh(x) __bswap32(x)
 #define htole16(x) __bswap16(x)
 #define htole32(x) __bswap32(x)
 static const bool kByteSwapData = true;
-#elif defined(__AMIGA__)
-#define le16toh(x) ((((uint16_t)(x) & 0xff) << 8 ) | ((uint16_t)(x) >> 8))
-#define le32toh(x) (((uint32_t)(x) << 24 ) | (((uint32_t)(x) & 0xff00) << 8 ) | (((uint32_t)(x) & 0x00ff0000) >> 8 ) | ((uint32_t)(x) >> 24))
-#define htole16(x) ((((uint16_t)(x) & 0xff) << 8 ) | ((uint16_t)(x) >> 8))
-#define htole32(x) (((uint32_t)(x) << 24 ) | (((uint32_t)(x) & 0xff00) << 8 ) | (((uint32_t)(x) & 0x00ff0000) >> 8 ) | ((uint32_t)(x) >> 24))
-static const bool kByteSwapData = true;
 #else
 #include <endian.h>
 static const bool kByteSwapData = (__BYTE_ORDER == __BIG_ENDIAN);
-#endif
 #endif
 
 #define ARRAYSIZE(a) (sizeof(a)/sizeof(a[0]))

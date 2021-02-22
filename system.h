@@ -19,8 +19,6 @@
 
 struct PlayerInput {
 	uint8_t prevMask, mask;
-	bool skip;
-	bool exit;
 	bool quit;
 	bool screenshot;
 
@@ -42,18 +40,14 @@ struct System {
 
 	virtual ~System() {}
 
-#if defined(__AMIGA__)
-	virtual void init(const char *title, int w, int h, bool fullscreen, bool widescreen, bool yuv, int width) = 0; // Cowcat width
-#else
 	virtual void init(const char *title, int w, int h, bool fullscreen, bool widescreen, bool yuv) = 0;
-#endif
-
 	virtual void destroy() = 0;
 
 	virtual void setScaler(const char *name, int multiplier) = 0;
 	virtual void setGamma(float gamma) = 0;
 
-	virtual void setPalette(const uint8_t *pal, int n, int depth = 8) = 0;
+	virtual void setPalette(const uint8_t *pal, int n, int depth) = 0;
+	virtual void clearPalette() = 0;
 	virtual void copyRect(int x, int y, int w, int h, const uint8_t *buf, int pitch) = 0;
 	virtual void copyYuv(int w, int h, const uint8_t *y, int ypitch, const uint8_t *u, int upitch, const uint8_t *v, int vpitch) = 0;
 	virtual void fillRect(int x, int y, int w, int h, uint8_t color) = 0;
@@ -71,6 +65,11 @@ struct System {
 	virtual void unlockAudio() = 0;
 	virtual AudioCallback setAudioCallback(AudioCallback callback) = 0;
 };
+
+extern void System_earlyInit();
+extern void System_printLog(FILE *, const char *s);
+extern void System_fatalError(const char *s);
+extern bool System_hasCommandLine();
 
 extern System *const g_system;
 
